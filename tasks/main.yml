@@ -31,19 +31,25 @@
   changed_when: false
 
 - name: Verify binaries
-  command: sha256sum -c checksums.txt --ignore-missing
+  command: sha256sum  -c checksums.txt --ignore-missing
   args:
     chdir: "{{ operator_sdk_download_dir }}"
   changed_when: no
-  when:
-    - hostvars[inventory_hostname].ansible_distribution_file_variety != 'RedHat'
-    - hostvars[inventory_hostname].ansible_distribution_major_version != 7
+  when: ansible_os_family != 'Darwin'
+
+- name: Verify binaries
+  command: shasum -a 256 -c checksums.txt --ignore-missing
+  args:
+    chdir: "{{ operator_sdk_download_dir }}"
+  changed_when: no
+  when: ansible_os_family == 'Darwin'
 
 - name: Install binaries
   ansible.builtin.file:
     src: "{{ operator_sdk_download_dir }}/{{ item }}_{{ binary_suffix }}"
     dest: "{{ operator_sdk_install_dir }}/{{ item }}"
     state: link
+    force: yes
     mode: 0700
   loop: "{{ binaries }}"
 
