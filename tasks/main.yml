@@ -1,0 +1,55 @@
+---
+# tasks file for ricfeatherstone.operator_sdk
+
+- name: Create directories
+  file:
+    name: "{{ item }}"
+    state: directory
+    mode: 0760
+  loop:
+    - "{{ operator_sdk_download_dir }}"
+    - "{{ operator_sdk_install_dir }}"
+
+- name: Download checksum files
+  get_url:
+    url: "{{ base_url }}/{{ item }}"
+    dest: "{{ operator_sdk_download_dir }}/{{ item }}"
+  loop:
+    - checksums.txt
+    - checksums.txt.asc
+
+- name: Download binaries
+  get_url:
+    url: "{{ base_url }}/{{ item }}_{{ binary_suffix }}"
+    dest: "{{ operator_sdk_download_dir }}/{{ item }}_{{ binary_suffix }}"
+  loop: "{{ binaries }}"
+
+- name: Verify signature
+  command: gpg --verify checksums.txt.asc checksums.txt
+  args:
+    chdir: "{{ operator_sdk_download_dir }}"
+  changed_when: false
+
+- name: Verify binaries
+  command: sha256sum -c checksums.txt --ignore-missing
+  args:
+    chdir: "{{ operator_sdk_download_dir }}"
+  changed_when: no
+  when:
+    - hostvars[inventory_hostname].ansible_distribution_file_variety != 'RedHat'
+    - hostvars[inventory_hostname].ansible_distribution_major_version != 7
+
+- name: Install binaries
+  ansible.builtin.file:
+    src: "{{ operator_sdk_download_dir }}/{{ item }}_{{ binary_suffix }}"
+    dest: "{{ operator_sdk_install_dir }}/{{ item }}"
+    state: link
+    mode: 0700
+  loop: "{{ binaries }}"
+
+- name: Verify installation
+  command: "{{ item }} version"
+  register: version
+  changed_when: no
+  failed_when: version_statement not in version.stdout
+  loop: "{{ binaries }}"

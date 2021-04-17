@@ -1,0 +1,10 @@
+---
+- name: Converge
+  hosts: all
+  vars:
+    operator_sdk_download_dir: /root/operator-sdk
+    operator_sdk_install_dir: /usr/bin
+  tasks:
+    - name: Include role
+      include_role:
+        name: "ricfeatherstone.operator_sdk"

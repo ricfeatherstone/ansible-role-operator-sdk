@@ -1,0 +1,12 @@
+---
+# vars file for ricfeatherstone.operator_sdk
+
+base_url: "https://github.com/operator-framework/operator-sdk/releases/download/v{{ operator_sdk_version }}"
+binaries:
+  - ansible-operator
+  - helm-operator
+  - operator-sdk
+os: "{{ hostvars[inventory_hostname].ansible_system | lower }}"
+arch: "{% if hostvars[inventory_hostname].ansible_architecture == 'x86_64' %}amd64{% else %}{{ hostvars[inventory_hostname].ansible_architecture }}{% endif %}"
+binary_suffix: "{{ os }}_{{ arch }}"
+version_statement: "version: \"v{{ operator_sdk_version }}\""

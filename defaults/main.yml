@@ -1,0 +1,6 @@
+---
+# defaults file for ricfeatherstone.operator_sdk
+
+operator_sdk_version: 1.6.1
+operator_sdk_download_dir: "{{ lookup('env','HOME') }}/tools/operator-sdk-{{ operator_sdk_version }}"
+operator_sdk_install_dir: "{{ lookup('env','HOME') }}/bin"
